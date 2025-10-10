@@ -1,0 +1,51 @@
+plugins {
+	id 'java'
+}
+
+group = 'com.jnditifei.connect.sink.saleforce'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Provided by Kafka Connect runtime
+	compileOnly 'org.apache.kafka:connect-api:3.9.0'
+
+	// Needed for tests
+	testImplementation 'org.apache.kafka:connect-api:3.9.0'
+
+	// Logging
+	implementation 'org.slf4j:slf4j-api:1.7.25'
+
+	// Your library dependencies (example: Salesforce client)
+	implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+	// Testing libraries
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+	testImplementation 'org.mockito:mockito-core:5.13.0'
+	testImplementation 'org.mockito:mockito-junit-jupiter:5.13.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+
+jar {
+	manifest {
+		attributes(
+				'Implementation-Title': 'Custom Kafka Sink Connector for Saleforce Bulk Api V2',
+				'Implementation-Version': version,
+				'Plugin-Class': 'com.jnditifei.connect.sink.salesforce.BulkApiV2.SinkBulkApiV2Connector'
+		)
+	}
+}
