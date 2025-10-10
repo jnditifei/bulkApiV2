@@ -1,4 +1,4 @@
-package com.jnditifei.connect.sink.salesforce.BulkApiV2;
+package com.jnditifei.connect.sink.salesforce;
 
 import endolabs.salesforce.bulkv2.Bulk2Client;
 import endolabs.salesforce.bulkv2.response.CreateJobResponse;

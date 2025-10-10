@@ -1,4 +1,4 @@
-package com.jnditifei.connect.sink.salesforce.BulkApiV2;
+package com.jnditifei.connect.sink.salesforce;
 
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
