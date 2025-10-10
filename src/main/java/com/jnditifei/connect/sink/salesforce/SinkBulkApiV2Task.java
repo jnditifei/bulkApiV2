@@ -125,55 +125,55 @@ public class SinkBulkApiV2Task extends SinkTask {
         Object val = r.value();
 
         // --- Case 1: Avro/Schema-based data (Struct) ---
-        switch (val) {
-            case org.apache.kafka.connect.data.Struct struct -> {
-                List<String> keys = struct.schema().fields()
-                        .stream()
-                        .map(org.apache.kafka.connect.data.Field::name)
-                        .sorted()
-                        .toList();
+        // --- Case 1: Avro/Schema-based data (Struct) ---
+        if (val instanceof org.apache.kafka.connect.data.Struct struct) {
+            List<String> keys = struct.schema().fields()
+                    .stream()
+                    .map(org.apache.kafka.connect.data.Field::name)
+                    .sorted()
+                    .toList();
 
-                String header = String.join(",", keys);
-                StringBuilder row = new StringBuilder();
+            String header = String.join(",", keys);
+            StringBuilder row = new StringBuilder();
 
-                for (int i = 0; i < keys.size(); i++) {
-                    Object fieldValue = struct.get(keys.get(i));
-                    row.append(csvEscape(String.valueOf(fieldValue == null ? "" : fieldValue)));
-                    if (i < keys.size() - 1) row.append(",");
-                }
-
-                return new CsvLine(header, row.toString());
+            for (int i = 0; i < keys.size(); i++) {
+                Object fieldValue = struct.get(keys.get(i));
+                row.append(csvEscape(String.valueOf(fieldValue == null ? "" : fieldValue)));
+                if (i < keys.size() - 1) row.append(",");
             }
 
-            // --- Case 2: JSON-style Map ---
-            case Map map1 -> {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) val;
-                // deterministic column order
-                List<String> keys = new ArrayList<>(map.keySet());
-                Collections.sort(keys);
-                String header = String.join(",", keys);
-                StringBuilder row = new StringBuilder();
-                for (int i = 0; i < keys.size(); i++) {
-                    Object v = map.get(keys.get(i));
-                    row.append(csvEscape(String.valueOf(v == null ? "" : v)));
-                    if (i < keys.size() - 1) row.append(",");
-                }
-                return new CsvLine(header, row.toString());
+            return new CsvLine(header, row.toString());
+        }
+
+        // --- Case 2: JSON-style Map ---
+        else if (val instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) val;
+            List<String> keys = new ArrayList<>(map.keySet());
+            Collections.sort(keys);
+            String header = String.join(",", keys);
+
+            StringBuilder row = new StringBuilder();
+            for (int i = 0; i < keys.size(); i++) {
+                Object v = map.get(keys.get(i));
+                row.append(csvEscape(String.valueOf(v == null ? "" : v)));
+                if (i < keys.size() - 1) row.append(",");
             }
-            // --- Case 3: Plain String ---
-            case String s -> {
-                String header = "value";
-                String line = csvEscape(s);
-                return new CsvLine(header, line);
-            }
-            // --- Case 4: Fallback for primitives or unknown types ---
-            case null, default -> {
-                // fallback: use toString
-                String header = "value";
-                String line = csvEscape(String.valueOf(val));
-                return new CsvLine(header, line);
-            }
+            return new CsvLine(header, row.toString());
+        }
+
+        // --- Case 3: Plain String ---
+        else if (val instanceof String str) {
+            String header = "value";
+            String line = csvEscape(str);
+            return new CsvLine(header, line);
+        }
+
+        // --- Case 4: Fallback for primitives or unknown types ---
+        else {
+            String header = "value";
+            String line = csvEscape(String.valueOf(val));
+            return new CsvLine(header, line);
         }
     }
 
