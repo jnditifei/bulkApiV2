@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.jnditifei.connect.sink.saleforce'
@@ -14,24 +15,19 @@ repositories {
 	mavenCentral()
 }
 
+
 dependencies {
-	// Provided by Kafka Connect runtime
-	compileOnly 'org.apache.kafka:connect-api:3.9.0'
-
-	// Needed for tests
-	testImplementation 'org.apache.kafka:connect-api:3.9.0'
-
-	// Logging
+	implementation 'org.apache.kafka:connect-api:3.9.0'
 	implementation 'org.slf4j:slf4j-api:1.7.25'
-
-	// Your library dependencies (example: Salesforce client)
-	implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-	// Testing libraries
+	implementation files('libs/salesforce-bulkv2-java.jar')
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
-	testImplementation 'org.mockito:mockito-core:5.13.0'
-	testImplementation 'org.mockito:mockito-junit-jupiter:5.13.0'
+}
+
+
+tasks.named('shadowJar') {
+	archiveBaseName.set('jnditifei-customBulkApiV2')
+	archiveVersion.set('0.0.1-SNAPSHOT')
 }
 
 tasks.named('test') {
@@ -42,8 +38,6 @@ tasks.named('test') {
 jar {
 	manifest {
 		attributes(
-				'Implementation-Title': 'Custom Kafka Sink Connector for Saleforce Bulk Api V2',
-				'Implementation-Version': version,
 				'Plugin-Class': 'com.jnditifei.connect.sink.salesforce.BulkApiV2.SinkBulkApiV2Connector'
 		)
 	}
