@@ -1,9 +1,9 @@
 package com.jnditifei.connect.sink.salesforce;
 
-import endolabs.salesforce.bulkv2.Bulk2Client;
-import endolabs.salesforce.bulkv2.response.CreateJobResponse;
-import endolabs.salesforce.bulkv2.response.GetJobInfoResponse;
-import endolabs.salesforce.bulkv2.type.OperationEnum;
+import com.jnditifei.salesforces.bulkv2.Bulk2Client;
+import com.jnditifei.salesforces.bulkv2.response.CreateJobResponse;
+import com.jnditifei.salesforces.bulkv2.response.GetJobInfoResponse;
+import com.jnditifei.salesforces.bulkv2.type.OperationEnum;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
