@@ -67,7 +67,7 @@ public class SinkBulkApiV2Connector extends SinkConnector {
                 .define(BATCH_MAX_RECORDS, ConfigDef.Type.INT, 1000, ConfigDef.Importance.LOW, "Max CSV payload size before flush")
                 .define(BATCH_FLUSH_INTERVAL_MS, ConfigDef.Type.LONG, 10000L, ConfigDef.Importance.LOW, "Max time between flushes")
                 .define(JOB_POLL_INTERVAL_MS, ConfigDef.Type.LONG, 5000L, ConfigDef.Importance.LOW, "Wait time between calling Salesforce result endpoint")
-                .define(JOB_POLL_TIMEOUT_MS, ConfigDef.Type.LONG, 180000L, ConfigDef.Importance.LOW, "Max total wait time to get job result");
+                .define(JOB_POLL_TIMEOUT_MS, ConfigDef.Type.LONG, 500000L, ConfigDef.Importance.LOW, "Max total wait time to get job result");
     }
 
     @Override

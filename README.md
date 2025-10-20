@@ -31,47 +31,21 @@ Configurable API version, OAuth credentials, and object name
 
 Compatible with Confluent Platform and Confluent Cloud
 
-### Architecture
-
-Kafka Topic  →  SalesforceBulkSinkTask  →  Bulk2Client  →  Salesforce Bulk API v2
-
-Class Relationships
-
-SalesforceSinkConnector
-
-Defines the connector configuration and creates task instances.
-
-SalesforceSinkTask
-
-Core logic for processing Kafka records and sending them to Salesforce.
-
-Bulk2Client
-
-Handles Salesforce Bulk API v2 operations (create job, upload data, close job, etc.).
-
-RestRequester
-
-Generic HTTP utility to interact with Salesforce endpoints.
-
-AccessToken & Bulk2ClientBuilder
-
-Manage authentication, token renewal, and HTTP client setup.
-
 ### Configuration
 
 | Config Key                   |   Type   | Required |                                                             Description |
 |:-----------------------------|:--------:|---------:|------------------------------------------------------------------------:|
 | salesforce.consumer.secret   |  String  |    ✅ Yes |                                          Connected app Consumer Secret. |
-| salesforce.consumer.secret   |  String  |    ✅ Yes |                                                   Salesforce username . |
+| salesforce.consumer.secret   |  String  |    ✅ Yes |                                                    Salesforce username. |
 | salesforce.username          |  String  |    ✅ Yes |                                                    Salesforce password. |
 | salesforce.password          |  String  |    ✅ Yes |                                                    Salesforce password. |
 | salesforce.external.id.field |  String  | optional |                                External ID field for upsert operations. |
 | salesforce.api.version       |  String  | optional |                                Salesforce API version (default: v60.0). |
-| batch.max.records            |  String  | optional |                            Max records per batch (default: 1024 * 512). |
-| batch.max.bytes              |  String  | optional |                               Max CSV payload size before flush (1000). |
+| batch.max.records            |  String  | optional |                         Max records per batch (default: 1024 * 512 ms). |
+| batch.max.bytes              |  String  | optional |                      Max CSV payload size before flush (default: 1000). |
 | flush.interval.ms            |  String  | optional | Max time between flushes, even if batch isn’t full (default: 10000 ms). |
-| salesforce.poll.interval.ms  |  String  | optional |                         Time to wait between call to result's endpoint. |
-| salesforce.poll.timeout.ms   |  String  | optional |                                       Max total time to get job Result. |
+| salesforce.poll.interval.ms  |  String  | optional |      Time to wait between call to result's endpoint(default: 5000 ms ). |
+| salesforce.poll.timeout.ms   |  String  | optional |                 Max total time to get job Result (default: 300000 ms ). |
 
 Example connector configuration:
 
@@ -164,7 +138,7 @@ Confluent Schema Registry (if using JSON or Avro converters)
 Java 11+
 
 Building and Running
-mvn clean package
+gradle clean build
 
 
 Deploy the connector JAR in your Kafka Connect plugin path and register the connector configuration via REST API:
