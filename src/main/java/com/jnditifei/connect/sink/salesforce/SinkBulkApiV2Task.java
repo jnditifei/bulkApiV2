@@ -239,7 +239,7 @@ public class SinkBulkApiV2Task extends SinkTask {
                 Thread.sleep(jobPollIntervalMs);
             }
 
-            log.info("Salesforce job completed: jobId={} object={} state={} processedRecords={} failedRecords={} duration={}s",
+            log.info("Salesforce job completed: jobId={} object={} state={} processedRecords={} failedRecords={} duration={}ms",
                     jobId, objectName, info.getState(), info.getNumberRecordsProcessed(), info.getNumberRecordsFailed(), info.getTotalProcessingTime());
 
             /*
