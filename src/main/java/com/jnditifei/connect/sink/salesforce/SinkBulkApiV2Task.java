@@ -43,7 +43,7 @@ public class SinkBulkApiV2Task extends SinkTask {
 
     @Override
     public String version() {
-        return "0.0.1-SNAPSHOT";
+        return SinkBulkApiV2Connector.API_VERSION;
     }
 
     @Override
@@ -96,7 +96,6 @@ public class SinkBulkApiV2Task extends SinkTask {
                 recordCount++;
                 bufferedBytes += csvLine.line.getBytes().length + 1;
 
-                long now = System.currentTimeMillis();
                 boolean sizeFull = bufferedBytes >= batchMaxBytes;
                 boolean countFull = recordCount >= batchMaxRecords;
 
@@ -245,7 +244,7 @@ public class SinkBulkApiV2Task extends SinkTask {
             /*
              * Check for unprocessed record results
              */
-            if ("Aborted".equalsIgnoreCase(String.valueOf(info.getState())) )  {
+            if (info.getNumberRecordsFailed() > 0 )  {
                 try (Reader r = client.getJobUnprocessedRecordResults(jobId)) {
                     BufferedReader br = new BufferedReader(r);
                     br.lines().forEach(line -> {

@@ -7,30 +7,6 @@ It supports high-volume upserts and inserts into Salesforce objects, with config
 
 This connector is designed for efficient integration between Kafka and Salesforce, especially for workloads that generate large batches of records.
 
-### Features
-
-Supports INSERT and UPSERT operations via Salesforce Bulk API v2
-
-Dynamic batching with configurable thresholds:
-
-Maximum batch size (in bytes)
-
-Maximum record count
-
-Maximum time interval
-
-Automatic Salesforce job creation, data upload, and job closure
-
-Error handling with optional routing of:
-
-Failed records to a dedicated topic
-
-Unprocessed records to a separate topic
-
-Configurable API version, OAuth credentials, and object name
-
-Compatible with Confluent Platform and Confluent Cloud
-
 ### Configuration
 
 | Config Key                   |   Type   | Required |                                                             Description |
@@ -111,7 +87,7 @@ Unprocessed records are routed to another topic if available.
 Error Handling
 
 Failed Records
-When Salesforce returns failed records for a completed job, they are logged and optionally sent to a dedicated topic.
+When Salesforce returns failed records for a completed job, they are logged.
 
 Unprocessed Records
 If a job fails entirely (e.g., malformed data, invalid field), the unprocessed batch can be routed to another Kafka topic for review.
