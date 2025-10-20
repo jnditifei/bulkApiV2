@@ -31,7 +31,7 @@ Configurable API version, OAuth credentials, and object name
 
 Compatible with Confluent Platform and Confluent Cloud
 
-#### Architecture
+### Architecture
 
 Kafka Topic  →  SalesforceBulkSinkTask  →  Bulk2Client  →  Salesforce Bulk API v2
 
@@ -57,7 +57,21 @@ AccessToken & Bulk2ClientBuilder
 
 Manage authentication, token renewal, and HTTP client setup.
 
-#### Configuration
+### Configuration
+
+| Config Key                   |   Type   | Required |                                                             Description |
+|:-----------------------------|:--------:|---------:|------------------------------------------------------------------------:|
+| salesforce.consumer.secret   |  String  |    ✅ Yes |                                          Connected app Consumer Secret. |
+| salesforce.consumer.secret   |  String  |    ✅ Yes |                                                   Salesforce username . |
+| salesforce.username          |  String  |    ✅ Yes |                                                    Salesforce password. |
+| salesforce.password          |  String  |    ✅ Yes |                                                    Salesforce password. |
+| salesforce.external.id.field |  String  | optional |                                External ID field for upsert operations. |
+| salesforce.api.version       |  String  | optional |                                Salesforce API version (default: v60.0). |
+| batch.max.records            |  String  | optional |                            Max records per batch (default: 1024 * 512). |
+| batch.max.bytes              |  String  | optional |                               Max CSV payload size before flush (1000). |
+| flush.interval.ms            |  String  | optional | Max time between flushes, even if batch isn’t full (default: 10000 ms). |
+| salesforce.poll.interval.ms  |  String  | optional |                         Time to wait between call to result's endpoint. |
+| salesforce.poll.timeout.ms   |  String  | optional |                                       Max total time to get job Result. |
 
 Example connector configuration:
 
@@ -133,10 +147,10 @@ Logging and Monitoring
 Typical successful job logs include:
 
 ```javascript
-INFO  [Salesforce] Created Bulk API v2 job: 7505g00000XYZ123 for object=CameleonCPQ__QxQuoteLine__c operation=UPSERT
-INFO  [Salesforce] Uploaded 500 records to job 7505g00000XYZ123
-INFO  [Salesforce] Closed job 7505g00000XYZ123
-INFO  [Salesforce] Job 7505g00000XYZ123 completed with state=JobComplete processed=500 failed=0
+INFO Created Salesforce job ID=7505g00000XYZ123 for object=my-object=UPSERT
+INFO Uploaded CSV data for job ID=7505g00000XYZ123
+INFO Closed job 7505g00000XYZ123
+INFO Salesforce job completed: jobId=7505g00000XYZ123 state=JobComplete processedRecords=1 failedRecords=1 duration=92ms
 ```
 
 #### Requirements
