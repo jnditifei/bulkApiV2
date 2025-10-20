@@ -61,7 +61,7 @@ public class SinkBulkApiV2Task extends SinkTask {
         batchMaxBytes = Integer.parseInt(props.getOrDefault(SinkBulkApiV2Connector.BATCH_MAX_BYTES, "524288"));
         batchMaxRecords = Integer.parseInt(props.getOrDefault(SinkBulkApiV2Connector.BATCH_MAX_RECORDS, "1000"));
         jobPollIntervalMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.JOB_POLL_INTERVAL_MS, "5000"));
-        jobPollTimeOutMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.JOB_POLL_TIMEOUT_MS, "180000"));
+        jobPollTimeOutMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.JOB_POLL_TIMEOUT_MS, "500000"));
 
         Bulk2ClientBuilder builder = new Bulk2ClientBuilder()
                 .withPasswordAndTokenEndpoint(tokenEndpoint, clientId, clientSecret, username, password)
