@@ -16,15 +16,16 @@ public class Bulk2Client {
 
     private static final Logger log = LoggerFactory.getLogger(Bulk2Client.class);
 
-    private static final String API_VERSION = "v41.0";
+    private final String apiVersion;
 
     private final RestRequester requester;
 
     private final String instanceUrl;
 
-    public Bulk2Client(RestRequester requester, String instanceUrl) {
+    public Bulk2Client(RestRequester requester, String instanceUrl, String apiVersion) {
         this.instanceUrl = instanceUrl;
         this.requester = requester;
+        this.apiVersion = apiVersion;
     }
 
     public CreateJobResponse createJob(String object, OperationEnum operation) {
@@ -112,6 +113,6 @@ public class Bulk2Client {
     private String buildUrl(String path) {
         boolean hasTrailingSlash = instanceUrl.endsWith("/");
 
-        return instanceUrl + (hasTrailingSlash ? "/" : "") + path.replace("vXX.X", API_VERSION);
+        return instanceUrl + (hasTrailingSlash ? "/" : "") + path.replace("vXX.X", apiVersion);
     }
 }

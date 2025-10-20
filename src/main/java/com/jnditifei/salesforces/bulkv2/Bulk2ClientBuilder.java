@@ -14,11 +14,25 @@ public class Bulk2ClientBuilder {
 
     private String tokenRequestEndpoint;
 
+    private String consumerKey;
+
+    private String consumerSecret;
+
+    private String username;
+
+    private String password;
+
+    private String apiVersion;
+
     private Supplier<AccessToken> accessTokenSupplier;
 
     public Bulk2ClientBuilder withPasswordAndTokenEndpoint(String tokenEndpoint, String consumerKey, String consumerSecret, String username, String password) {
         this.tokenRequestEndpoint = tokenEndpoint;
-        this.accessTokenSupplier = () -> this.getAccessTokenUsingPassword(consumerKey, consumerSecret, username, password);
+        this.consumerKey = consumerKey;
+        this.consumerSecret = consumerSecret;
+        this.username =username;
+        this.password = password;
+        this.accessTokenSupplier = () -> this.getAccessTokenUsingPassword(tokenEndpoint, consumerKey, consumerSecret, username, password);
 
         return this;
     }
@@ -34,19 +48,23 @@ public class Bulk2ClientBuilder {
         return this;
     }
 
+    public Bulk2ClientBuilder withApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+        return this;
+    }
+
     public Bulk2Client build()
             throws IOException {
         AccessToken token = accessTokenSupplier.get();
 
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(authorizationInterceptor(token.getAccessToken()))
+                .addInterceptor(authorizationInterceptor(accessTokenSupplier,tokenRequestEndpoint, consumerKey, consumerSecret, username, password))
                 .addInterceptor(httpLoggingInterceptor(HttpLoggingInterceptor.Level.BODY))
                 .build();
-        return new Bulk2Client(new RestRequester(client), token.getInstanceUrl());
+        return new Bulk2Client(new RestRequester(client), token.getInstanceUrl(), apiVersion);
     }
 
-    private AccessToken getAccessTokenUsingPassword(String consumerKey, String consumerSecret, String username, String password) {
-        String endpoint = tokenRequestEndpoint;
+    private AccessToken getAccessTokenUsingPassword(String endpoint, String consumerKey, String consumerSecret, String username, String password) {
         HttpUrl authorizeUrl = HttpUrl.parse(endpoint).newBuilder().build();
 
         RequestBody requestBody = new FormBody.Builder()
@@ -77,19 +95,53 @@ public class Bulk2ClientBuilder {
         }
     }
 
-    private Interceptor authorizationInterceptor(String token) {
-        return chain -> {
-            Request request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer " + token)
-                    .build();
-            return chain.proceed(request);
-        };
-    }
-
     private HttpLoggingInterceptor httpLoggingInterceptor(HttpLoggingInterceptor.Level level) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> log.info(message));
         logging.setLevel(level);
 
         return logging;
+    }
+
+    private Interceptor authorizationInterceptor(Supplier<AccessToken> tokenSupplier, String endpoint, String consumerKey, String consumerSecret, String username, String password) {
+        return chain -> {
+            Request originalRequest = chain.request();
+
+            // initial request
+            AccessToken currentToken = tokenSupplier.get();
+            Request requestWithAuth = originalRequest.newBuilder()
+                    .addHeader("Authorization", "Bearer " + currentToken.getAccessToken())
+                    .build();
+
+            Response response = chain.proceed(requestWithAuth);
+
+            if (response.code() == 401) { // token expired
+                log.warn("Salesforce token expired, attempting to refresh...");
+
+                synchronized (this) {
+                    // force refresh
+                    AccessToken newToken = getAccessTokenUsingPassword(
+                            endpoint,
+                            consumerKey,
+                            consumerSecret,
+                            username,
+                            password
+                    );
+
+                    // replace the supplier content if needed
+                    this.accessTokenSupplier = () -> newToken;
+
+                    // retry the request with the new token
+                    Request retryRequest = originalRequest.newBuilder()
+                            .removeHeader("Authorization")
+                            .addHeader("Authorization", "Bearer " + newToken.getAccessToken())
+                            .build();
+
+                    response.close(); // close old response before retry
+                    return chain.proceed(retryRequest);
+                }
+            }
+
+            return response;
+        };
     }
 }

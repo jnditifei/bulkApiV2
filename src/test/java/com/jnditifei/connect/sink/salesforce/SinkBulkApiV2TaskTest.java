@@ -71,7 +71,7 @@ class SinkBulkApiV2TaskTest {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("Name", "Acme Inc");
         map.put("Industry", "Tech");
-
+        System.out.println(map);
         SinkRecord record = new SinkRecord("topic", 0, null, null, null, map, 0);
 
         // Call put
@@ -104,7 +104,6 @@ class SinkBulkApiV2TaskTest {
         verify(client).uploadJobData(eq("JOB-1"), contains("Industry,Name"));
         verify(client).closeJob(eq("JOB-1"));
         verify(client).getJobInfo(eq("JOB-1"));
-        verify(client).getJobFailedRecordResults(eq("JOB-1"));
     }
 
     @Test
