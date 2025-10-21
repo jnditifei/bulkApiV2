@@ -37,17 +37,6 @@ public class Bulk2ClientBuilder {
         return this;
     }
 
-    public Bulk2ClientBuilder withSessionId(String token, String instanceUrl) {
-        this.accessTokenSupplier = () -> {
-            AccessToken accessToken = new AccessToken();
-            accessToken.setAccessToken(token);
-            accessToken.setInstanceUrl(instanceUrl);
-            return accessToken;
-        };
-
-        return this;
-    }
-
     public Bulk2ClientBuilder withApiVersion(String apiVersion) {
         this.apiVersion = apiVersion;
         return this;

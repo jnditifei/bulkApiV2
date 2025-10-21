@@ -6,6 +6,8 @@ import com.jnditifei.salesforces.bulkv2.request.CreateJobRequest;
 import com.jnditifei.salesforces.bulkv2.response.ErrorResponse;
 import okhttp3.*;
 import okio.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class RestRequester {
+
+    private static final Logger log = LoggerFactory.getLogger(RestRequester.class);
 
     private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
@@ -32,7 +36,7 @@ public class RestRequester {
     }
 
     public <T> T putCsv(String url, String requestData, Class<T> responseClass) {
-        RequestBody requestBody = (requestData == null) ? null : RequestBody.create(CSV_MEDIA_TYPE, ByteString.encodeUtf8(requestData));
+        RequestBody requestBody = (requestData == null) ? null : RequestBody.create(ByteString.encodeUtf8(requestData), CSV_MEDIA_TYPE);
 
         return request(url, "PUT", new HashMap<>(), requestBody, responseClass);
     }
@@ -53,17 +57,16 @@ public class RestRequester {
         Object transformedRequest = requestData;
 
         // TODO: avoid if-statement due to specific request instance
-        if (requestData instanceof CreateJobRequest) {
-            CreateJobRequest createJob = (CreateJobRequest) requestData;
+        if (requestData instanceof CreateJobRequest createJob) {
 
-            RequestBody content = createJob.getContent() != null ? RequestBody.create(CSV_MEDIA_TYPE, createJob.getContent())
-                    : createJob.getContentFile() != null ? RequestBody.create(CSV_MEDIA_TYPE, createJob.getContentFile())
+            RequestBody content = createJob.getContent() != null ? RequestBody.create(createJob.getContent(), CSV_MEDIA_TYPE)
+                    : createJob.getContentFile() != null ? RequestBody.create(createJob.getContentFile(), CSV_MEDIA_TYPE)
                     : null;
             if (content != null) {
                 transformedRequest = new MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
                         .addFormDataPart("job", null,
-                                RequestBody.create(JSON_MEDIA_TYPE, Json.encode(requestData)))
+                                RequestBody.create(Json.encode(requestData), JSON_MEDIA_TYPE))
                         .addFormDataPart("content", "content", content)
                         .build();
             }
@@ -87,7 +90,7 @@ public class RestRequester {
     private <T> T requestJson(String url, String httpMethod, Map<String, String> queryParams, Object requestData, Class<T> responseClass) {
         RequestBody requestBody = (requestData == null) ? null
                 : (requestData instanceof RequestBody) ? (RequestBody) requestData
-                : RequestBody.create(JSON_MEDIA_TYPE, Json.encode(requestData));
+                : RequestBody.create(Json.encode(requestData), JSON_MEDIA_TYPE);
 
         return request(url, httpMethod, queryParams, requestBody, responseClass);
     }
@@ -130,7 +133,7 @@ public class RestRequester {
                 body = responseBody.string();
                 responseBody.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.warn(e.getMessage());
             }
 
             if (response.isSuccessful()) {
