@@ -90,29 +90,16 @@ public class CreateJobRequest {
 
         private File contentFile;
 
-        public Builder(String object, OperationEnum operation) {
+        public Builder(String object, OperationEnum operation, String columnDelimiter, String lineEnding) {
             this.object = object;
             this.operation = operation;
             this.contentType = ContentTypeEnum.CSV;
-        }
-
-        public Builder withColumnDelimiter(ColumnDelimiterEnum columnDelimiter) {
-            this.columnDelimiter = columnDelimiter;
-            return this;
-        }
-
-        public Builder withContentType(ContentTypeEnum contentType) {
-            this.contentType = contentType;
-            return this;
+            this.columnDelimiter = ColumnDelimiterEnum.valueOf(columnDelimiter);
+            this.lineEnding = LineEndingEnum.valueOf(lineEnding);
         }
 
         public Builder withExternalIdFieldName(String externalIdFieldName) {
             this.externalIdFieldName = externalIdFieldName;
-            return this;
-        }
-
-        public Builder withLineEnding(LineEndingEnum lineEnding) {
-            this.lineEnding = lineEnding;
             return this;
         }
 

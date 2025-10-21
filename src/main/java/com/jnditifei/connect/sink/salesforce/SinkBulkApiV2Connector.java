@@ -25,6 +25,8 @@ public class SinkBulkApiV2Connector extends SinkConnector {
     public static final String BATCH_FLUSH_INTERVAL_MS = "flush.interval.ms";
     public static final String JOB_POLL_INTERVAL_MS = "salesforce.poll.interval.ms";
     public static final String JOB_POLL_TIMEOUT_MS = "salesforce.poll.timeout.ms";
+    public static final String COLUMN_DELIMITER = "salesforce.column.delimiter";
+    public static final String LINE_ENDING = "salesforce.line.ending";
 
     private Map<String, String> configProps;
 
@@ -67,7 +69,9 @@ public class SinkBulkApiV2Connector extends SinkConnector {
                 .define(BATCH_MAX_RECORDS, ConfigDef.Type.INT, 1000, ConfigDef.Importance.LOW, "Max CSV payload size before flush")
                 .define(BATCH_FLUSH_INTERVAL_MS, ConfigDef.Type.LONG, 10000L, ConfigDef.Importance.LOW, "Max time between flushes")
                 .define(JOB_POLL_INTERVAL_MS, ConfigDef.Type.LONG, 5000L, ConfigDef.Importance.LOW, "Wait time between calling Salesforce result endpoint")
-                .define(JOB_POLL_TIMEOUT_MS, ConfigDef.Type.LONG, 500000L, ConfigDef.Importance.LOW, "Max total wait time to get job result");
+                .define(JOB_POLL_TIMEOUT_MS, ConfigDef.Type.LONG, 500000L, ConfigDef.Importance.LOW, "Max total wait time to get job result")
+                .define(COLUMN_DELIMITER, ConfigDef.Type.STRING, "COMMA", ConfigDef.Importance.LOW, "Accepted value: BACKQUOTE, CARET, COMMA, PIPE, SEMICOLON, TAB")
+                .define(LINE_ENDING, ConfigDef.Type.STRING, "LF", ConfigDef.Importance.LOW, "Accepted value: LF, CRLF");
     }
 
     @Override

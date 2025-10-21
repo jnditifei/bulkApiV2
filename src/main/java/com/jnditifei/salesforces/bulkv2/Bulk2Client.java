@@ -22,10 +22,16 @@ public class Bulk2Client {
 
     private final String instanceUrl;
 
-    public Bulk2Client(RestRequester requester, String instanceUrl, String apiVersion) {
+    private final String columnDelimiter;
+
+    private final String lineEnding;
+
+    public Bulk2Client(RestRequester requester, String instanceUrl, String apiVersion, String columnDelimiter, String lineEnding) {
         this.instanceUrl = instanceUrl;
         this.requester = requester;
         this.apiVersion = apiVersion;
+        this.columnDelimiter = columnDelimiter;
+        this.lineEnding = lineEnding;
     }
 
     public CreateJobResponse createJob(String object, OperationEnum operation) {
@@ -36,7 +42,7 @@ public class Bulk2Client {
     public CreateJobResponse createJob(String object, OperationEnum operation, Consumer<CreateJobRequest.Builder> requestBuilder) {
         String url = buildUrl("/services/data/vXX.X/jobs/ingest");
 
-        CreateJobRequest.Builder builder = new CreateJobRequest.Builder(object, operation);
+        CreateJobRequest.Builder builder = new CreateJobRequest.Builder(object, operation, columnDelimiter, lineEnding);
         requestBuilder.accept(builder);
 
         return requester.post(url, builder.build(), CreateJobResponse.class);

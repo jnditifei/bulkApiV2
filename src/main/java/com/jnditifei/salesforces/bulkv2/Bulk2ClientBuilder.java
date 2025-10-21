@@ -5,6 +5,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.function.Supplier;
 
@@ -12,33 +13,42 @@ public class Bulk2ClientBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(Bulk2ClientBuilder.class);
 
-    private String tokenRequestEndpoint;
+    private final String tokenRequestEndpoint;
 
-    private String consumerKey;
+    private final String consumerKey;
 
-    private String consumerSecret;
+    private final String consumerSecret;
 
-    private String username;
+    private final String username;
 
-    private String password;
+    private final String password;
 
-    private String apiVersion;
+    private final String apiVersion;
+
+    private final String columnDelimiter;
+
+    private final String lineEnding;
+
+    private String content;
+
+    private File file;
 
     private Supplier<AccessToken> accessTokenSupplier;
 
-    public Bulk2ClientBuilder withPasswordAndTokenEndpoint(String tokenEndpoint, String consumerKey, String consumerSecret, String username, String password) {
+    public Bulk2ClientBuilder (String tokenEndpoint, String consumerKey, String consumerSecret, String username, String password, String apiVersion, String columnDelimiter, String lineEnding) {
         this.tokenRequestEndpoint = tokenEndpoint;
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.username =username;
         this.password = password;
+        this.apiVersion = apiVersion;
+        this.columnDelimiter = columnDelimiter;
+        this.lineEnding = lineEnding;
         this.accessTokenSupplier = () -> this.getAccessTokenUsingPassword(tokenEndpoint, consumerKey, consumerSecret, username, password);
-
-        return this;
     }
 
-    public Bulk2ClientBuilder withApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
+    public Bulk2ClientBuilder withContent(File file) {
+        this.file = file;
         return this;
     }
 
@@ -50,39 +60,9 @@ public class Bulk2ClientBuilder {
                 .addInterceptor(authorizationInterceptor(accessTokenSupplier,tokenRequestEndpoint, consumerKey, consumerSecret, username, password))
                 .addInterceptor(httpLoggingInterceptor(HttpLoggingInterceptor.Level.BODY))
                 .build();
-        return new Bulk2Client(new RestRequester(client), token.getInstanceUrl(), apiVersion);
+        return new Bulk2Client(new RestRequester(client), token.getInstanceUrl(), apiVersion, columnDelimiter, lineEnding);
     }
 
-    private AccessToken getAccessTokenUsingPassword(String endpoint, String consumerKey, String consumerSecret, String username, String password) {
-        HttpUrl authorizeUrl = HttpUrl.parse(endpoint).newBuilder().build();
-
-        RequestBody requestBody = new FormBody.Builder()
-                .add("grant_type", "password")
-                .add("client_id", consumerKey)
-                .add("client_secret", consumerSecret)
-                .add("username", username)
-                .add("password", password)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(authorizeUrl)
-                .post(requestBody)
-                .build();
-
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                // .addInterceptor(new SigningInterceptor(consumer))
-                .addInterceptor(httpLoggingInterceptor(HttpLoggingInterceptor.Level.BASIC))
-                .build();
-
-        try {
-            Response response = client.newCall(request).execute();
-            ResponseBody responseBody = response.body();
-
-            return Json.decode(responseBody.string(), AccessToken.class);
-        } catch (IOException e) {
-            throw new BulkRequestException(e);
-        }
-    }
 
     private HttpLoggingInterceptor httpLoggingInterceptor(HttpLoggingInterceptor.Level level) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> log.info(message));
@@ -132,5 +112,36 @@ public class Bulk2ClientBuilder {
 
             return response;
         };
+    }
+
+    private AccessToken getAccessTokenUsingPassword(String endpoint, String consumerKey, String consumerSecret, String username, String password) {
+        HttpUrl authorizeUrl = HttpUrl.parse(endpoint).newBuilder().build();
+
+        RequestBody requestBody = new FormBody.Builder()
+                .add("grant_type", "password")
+                .add("client_id", consumerKey)
+                .add("client_secret", consumerSecret)
+                .add("username", username)
+                .add("password", password)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(authorizeUrl)
+                .post(requestBody)
+                .build();
+
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                // .addInterceptor(new SigningInterceptor(consumer))
+                .addInterceptor(httpLoggingInterceptor(HttpLoggingInterceptor.Level.BASIC))
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            ResponseBody responseBody = response.body();
+
+            return Json.decode(responseBody.string(), AccessToken.class);
+        } catch (IOException e) {
+            throw new BulkRequestException(e);
+        }
     }
 }

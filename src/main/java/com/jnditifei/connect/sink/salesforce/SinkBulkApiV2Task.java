@@ -17,15 +17,9 @@ import java.util.*;
 
 public class SinkBulkApiV2Task extends SinkTask {
 
-    private String clientId;
-    private String clientSecret;
-    private String username;
-    private String password;
-    private String tokenEndpoint;
     private String objectName;
     private String operationStr;
     private String externalIdField;
-    private String apiVersion;
     private int batchMaxRecords;
     private int batchMaxBytes;
     private long batchMaxIntervalMs;
@@ -48,24 +42,24 @@ public class SinkBulkApiV2Task extends SinkTask {
 
     @Override
     public void start(Map<String, String> props) {
-        clientId = props.get(SinkBulkApiV2Connector.CLIENT_ID);
-        clientSecret = props.get(SinkBulkApiV2Connector.CLIENT_SECRET);
-        username = props.get(SinkBulkApiV2Connector.USERNAME);
-        password = props.get(SinkBulkApiV2Connector.PASSWORD);
+        String clientId = props.get(SinkBulkApiV2Connector.CLIENT_ID);
+        String clientSecret = props.get(SinkBulkApiV2Connector.CLIENT_SECRET);
+        String username = props.get(SinkBulkApiV2Connector.USERNAME);
+        String password = props.get(SinkBulkApiV2Connector.PASSWORD);
         objectName = props.get(SinkBulkApiV2Connector.OBJECT_NAME);
         operationStr = props.getOrDefault(SinkBulkApiV2Connector.OPERATION, "INSERT").toUpperCase(Locale.ROOT);
         externalIdField = props.getOrDefault(SinkBulkApiV2Connector.EXTERNAL_ID, null);
-        tokenEndpoint = props.get(SinkBulkApiV2Connector.TOKEN_REQUEST_ENDPOINT);
-        apiVersion = props.getOrDefault(SinkBulkApiV2Connector.API_VERSION, "v60.0");
+        String tokenEndpoint = props.get(SinkBulkApiV2Connector.TOKEN_REQUEST_ENDPOINT);
+        String apiVersion = props.getOrDefault(SinkBulkApiV2Connector.API_VERSION, "v60.0");
         batchMaxIntervalMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.BATCH_MAX_BYTES, "10000"));
         batchMaxBytes = Integer.parseInt(props.getOrDefault(SinkBulkApiV2Connector.BATCH_MAX_BYTES, "524288"));
         batchMaxRecords = Integer.parseInt(props.getOrDefault(SinkBulkApiV2Connector.BATCH_MAX_RECORDS, "1000"));
         jobPollIntervalMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.JOB_POLL_INTERVAL_MS, "5000"));
         jobPollTimeOutMs = Long.parseLong(props.getOrDefault(SinkBulkApiV2Connector.JOB_POLL_TIMEOUT_MS, "500000"));
+        String columnDelimiter = props.getOrDefault(SinkBulkApiV2Connector.COLUMN_DELIMITER, "COMMA");
+        String lineEnding = props.getOrDefault(SinkBulkApiV2Connector.LINE_ENDING, "LF");
 
-        Bulk2ClientBuilder builder = new Bulk2ClientBuilder()
-                .withPasswordAndTokenEndpoint(tokenEndpoint, clientId, clientSecret, username, password)
-                .withApiVersion(apiVersion);
+        Bulk2ClientBuilder builder = new Bulk2ClientBuilder(tokenEndpoint, clientId, clientSecret, username, password, apiVersion, columnDelimiter, lineEnding);
         try {
             client = builder.build();
         } catch (IOException e) {
@@ -111,7 +105,7 @@ public class SinkBulkApiV2Task extends SinkTask {
         long now = System.currentTimeMillis();
         boolean timeExceeded = (now - lastFlushTime) >= batchMaxIntervalMs;
         if (timeExceeded) {
-            log.info("⏰ Time-based flush triggered via preCommit()");
+            log.info("Time-based flush triggered via preCommit()");
             flushBufferToSalesforce();
         }
         return currentOffsets;
